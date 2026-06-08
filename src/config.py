@@ -1,4 +1,4 @@
-"""Application configuration from environment variables or Streamlit secrets."""
+"""Application configuration dynamically resolved at runtime from environment variables or Streamlit secrets."""
 
 import os
 from pathlib import Path
@@ -28,39 +28,50 @@ def _get_config(name: str, default: str | None = None) -> str | None:
     return default
 
 
-DATASET_ID: str = _get_config(
-    "DATASET_ID", "ManikaSaini/zomato-restaurant-recommendation"
-)
-HF_TOKEN: str | None = _get_config("HF_TOKEN") or None
-
-INGESTION_MAX_RETRIES: int = int(_get_config("INGESTION_MAX_RETRIES", "3"))
-INGESTION_RETRY_DELAY_SECONDS: float = float(
-    _get_config("INGESTION_RETRY_DELAY_SECONDS", "2.0")
-)
-
-
-def _positive_int(name: str, default: int) -> int:
-    raw = _get_config(name)
-    if raw is None:
-        return default
-    try:
-        value = int(raw)
-    except ValueError:
-        return default
-    return value if value > 0 else default
+# Default static values
+_DEFAULTS = {
+    "DATASET_ID": "ManikaSaini/zomato-restaurant-recommendation",
+    "HF_TOKEN": None,
+    "INGESTION_MAX_RETRIES": "3",
+    "INGESTION_RETRY_DELAY_SECONDS": "2.0",
+    "MAX_CANDIDATES": "25",
+    "TOP_K": "5",
+    "GROQ_API_KEY": None,
+    "LLM_MODEL": "llama-3.3-70b-versatile",
+    "LLM_TEMPERATURE": "0.3",
+    "LLM_MAX_TOKENS": "2000",
+    "LLM_TIMEOUT_SECONDS": "60",
+    "LLM_MAX_RETRIES": "1",
+    "LLM_RETRY_DELAY_SECONDS": "2.0",
+}
 
 
-MAX_CANDIDATES: int = _positive_int("MAX_CANDIDATES", 25)
-TOP_K: int = min(_positive_int("TOP_K", 5), MAX_CANDIDATES)
+def __getattr__(name: str):
+    """Dynamically get configuration at runtime (ensures Streamlit secrets are loaded)."""
+    if name not in _DEFAULTS:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-# Groq (primary LLM provider)
-GROQ_API_KEY: str | None = (
-    _get_config("GROQ_API_KEY") or _get_config("LLM_API_KEY") or None
-)
-LLM_MODEL: str = _get_config("LLM_MODEL", "llama-3.3-70b-versatile")
-LLM_TEMPERATURE: float = float(_get_config("LLM_TEMPERATURE", "0.3"))
-LLM_MAX_TOKENS: int = _positive_int("LLM_MAX_TOKENS", 2000)
-LLM_TIMEOUT_SECONDS: float = float(_get_config("LLM_TIMEOUT_SECONDS", "60"))
-LLM_MAX_RETRIES: int = _positive_int("LLM_MAX_RETRIES", 1)
-LLM_RETRY_DELAY_SECONDS: float = float(_get_config("LLM_RETRY_DELAY_SECONDS", "2.0"))
+    default = _DEFAULTS[name]
+    val = _get_config(name, default)
 
+    # Convert to appropriate types
+    if name in ["INGESTION_MAX_RETRIES", "MAX_CANDIDATES", "LLM_MAX_TOKENS", "LLM_MAX_RETRIES"]:
+        try:
+            return int(val) if val is not None else int(default)
+        except ValueError:
+            return int(default)
+    elif name == "TOP_K":
+        try:
+            top_k_val = int(val) if val is not None else int(default)
+            max_cand = __getattr__("MAX_CANDIDATES")
+            return min(top_k_val, max_cand)
+        except ValueError:
+            return int(default)
+    elif name in ["INGESTION_RETRY_DELAY_SECONDS", "LLM_TEMPERATURE", "LLM_TIMEOUT_SECONDS", "LLM_RETRY_DELAY_SECONDS"]:
+        try:
+            return float(val) if val is not None else float(default)
+        except ValueError:
+            return float(default)
+
+    # String or None types
+    return val

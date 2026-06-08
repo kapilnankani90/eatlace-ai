@@ -1,9 +1,6 @@
 """
-Streamlit UI for the Zomato AI restaurant recommendation system.
-Redesigned to match the dark-mode aesthetic in docs/design/screen.png.
-
-Run from project root:
-    python -m streamlit run src/ui/app.py
+Streamlit UI for Eatlace AI.
+Redesigned to match Screen 1 and Screen 2 from docs/design/screen 1.png and screen 2.png.
 """
 
 from __future__ import annotations
@@ -11,7 +8,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-# Ensure project root is on path when Streamlit runs this file directly
+# Ensure project root is on path
 _ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
@@ -23,54 +20,193 @@ from src.services.llm_client import LLMError
 from src.services.orchestrator import OrchestratorError, RecommendationOrchestrator
 from src.services.validator import PreferenceValidationError, PreferenceValidator
 
+# Set page config
 st.set_page_config(
-    page_title="EATLACE AI - Restaurant Recommendations",
+    page_title="Eatlace AI",
     page_icon="🍽️",
     layout="wide",
 )
 
-# --- Custom Styling (CSS) matching screen.png ---
+# --- Custom CSS to match the design style of Screen 1 & 2 ---
 st.markdown(
     """
 <style>
-/* Hide Streamlit components */
+/* Hide Streamlit default components */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
+.stDeployButton {display:none;}
 
-/* Base theme */
+/* Global Styles */
 .stApp {
     background-color: #0c0d0f !important;
     color: #e2e4e9 !important;
     font-family: 'Inter', sans-serif !important;
 }
 
-/* Header Bar */
-.header-bar {
+/* Custom header */
+.custom-header {
+    border-bottom: 1px solid #1f2026;
+    padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
-    background-color: #121316;
-    border-bottom: 1px solid #1f2026;
-    margin-bottom: 24px;
-    border-radius: 8px;
+    background-color: rgba(13, 14, 17, 0.8);
+    backdrop-filter: blur(10px);
+    margin-bottom: 32px;
 }
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-.brand-title {
-    font-size: 22px;
+.brand-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
     font-weight: 800;
     color: #E23744;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
+    cursor: pointer;
 }
-.badge {
+.nav-link {
+    color: #a0a0ab;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+    margin-right: 24px;
+}
+.nav-link:hover {
+    color: white;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background-color: #E23744;
+    color: white;
+    font-weight: bold;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* Screen 1 Centered Layout */
+.hero-container {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.hero-pill {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    background-color: rgba(226, 55, 68, 0.1);
+    border: 1px solid rgba(226, 55, 68, 0.2);
+    font-size: 12px;
+    font-weight: 700;
+    color: #E23744;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+.hero-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+}
+.hero-italic {
+    font-family: 'Playfair Display', serif;
+    color: #E23744;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Labels */
+.field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #71717a;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+/* Styled HTML inputs wrapper */
+.form-card {
+    background-color: #121316;
+    border: 1px solid #1f2026;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+/* Standard button override */
+div.stButton > button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+div.stButton > button[key="btn_get_recommendations"] {
+    background-color: #E23744 !important;
+    color: white !important;
+    border: none !important;
+    height: 52px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    transition: all 0.2s !important;
+    box-shadow: 0 4px 14px rgba(226, 55, 68, 0.2) !important;
+}
+div.stButton > button[key="btn_get_recommendations"]:hover {
+    background-color: #ff4d5a !important;
+    transform: scale(1.01) !important;
+}
+
+/* Segmented Buttons */
+div.stButton > button.budget-btn-inactive {
+    background-color: transparent !important;
+    color: #a0a0ab !important;
+    border: 1px solid #2d2d34 !important;
+}
+div.stButton > button.budget-btn-inactive:hover {
+    color: white !important;
+    border-color: #a0a0ab !important;
+}
+div.stButton > button.budget-btn-active {
+    background-color: #E23744 !important;
+    color: white !important;
+    border: 1px solid #E23744 !important;
+}
+
+/* Results Summary */
+.results-summary-card {
+    background-color: #121316;
+    border: 1px solid #1f2026;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+.summary-left {
+    flex: 1;
+}
+.summary-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+}
+.summary-sub {
+    font-size: 14px;
+    color: #a0a0ab;
+    margin-bottom: 12px;
+}
+.summary-chip-container {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.summary-chip {
     background-color: #1a1a1e;
     border: 1px solid #2d2d34;
     padding: 4px 12px;
@@ -79,125 +215,13 @@ header {visibility: hidden;}
     font-weight: 600;
     color: #a0a0ab;
 }
-.dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-}
-.green-dot {
-    background-color: #10b981;
-    box-shadow: 0 0 8px #10b981;
-}
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-.icon-btn {
-    font-size: 18px;
-    cursor: pointer;
-    color: #a0a0ab;
-}
-.avatar-box {
-    background-color: #E23744;
-    padding: 6px 10px;
-    border-radius: 4px;
-    color: #ffffff;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-/* Preference Engine Sidebar styling */
-.preference-engine-container {
-    background-color: #121316;
-    border: 1px solid #1f2026;
-    border-radius: 8px;
-    padding: 20px;
-}
-.panel-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #a0a0ab;
-    letter-spacing: 1.5px;
-    margin-bottom: 2px;
-}
-.panel-subtitle {
-    font-size: 11px;
-    color: #71717a;
-    margin-bottom: 20px;
-}
-.section-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #71717a;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    margin-top: 18px;
-}
-
-/* Red button for Search */
-div.stButton > button {
-    border-radius: 4px !important;
-}
-div.stButton > button[key="refine_search_btn"] {
-    background-color: #E23744 !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px !important;
-    height: 48px !important;
-    margin-top: 24px !important;
-    transition: background-color 0.2s !important;
-}
-div.stButton > button[key="refine_search_btn"]:hover {
-    background-color: #ff4d5a !important;
-}
-
-/* Budget & Cuisine buttons */
-div.stButton > button.secondary-button {
-    background-color: #1a1a1e !important;
-    color: #a0a0ab !important;
-    border: 1px solid #2d2d34 !important;
-}
-div.stButton > button.secondary-button:hover {
-    color: #ffffff !important;
-    border-color: #a0a0ab !important;
-}
-div.stButton > button.primary-button {
-    background-color: #E23744 !important;
-    color: #ffffff !important;
-    border: 1px solid #E23744 !important;
-}
-
-/* Recommendations styling */
-.summary-card {
-    background-color: #121316;
-    border-left: 4px solid #E23744;
-    padding: 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-.summary-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 8px;
-}
-.summary-desc {
-    font-size: 14px;
-    color: #a0a0ab;
-    line-height: 1.5;
-}
 .confidence-box {
-    text-align: right;
-    flex-shrink: 0;
-    margin-left: 20px;
+    background-color: #1a1a1e;
+    border: 1px solid #2d2d34;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    min-w: 120px;
 }
 .confidence-val {
     font-size: 28px;
@@ -214,157 +238,118 @@ div.stButton > button.primary-button {
     margin-top: 4px;
 }
 
-/* Expandable details details/summary cards */
-details.rec-card {
+/* Grid card */
+.grid-card {
     background-color: #121316;
     border: 1px solid #1f2026;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    overflow: hidden;
-}
-details.rec-card summary {
+    border-radius: 12px;
+    padding: 24px;
     display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    transition: border-color 0.3s;
 }
-details.rec-card summary::-webkit-details-marker {
-    display: none;
+.grid-card:hover {
+    border-color: #4b5563;
 }
-.rank-badge {
-    background-color: #1f2026;
-    color: #a0a0ab;
-    font-size: 14px;
+.card-header-tag {
+    font-size: 11px;
     font-weight: 700;
-    padding: 8px 14px;
-    border-radius: 4px;
-    margin-right: 16px;
-    flex-shrink: 0;
+    color: #E23744;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
-.rank-badge.top-rank {
-    background-color: #E23744;
-    color: #ffffff;
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
-.rec-info {
-    flex: 1;
-}
-.rec-name-row {
+.card-meta {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
+    gap: 16px;
+    font-size: 12px;
+    color: #a0a0ab;
+    margin-bottom: 16px;
     flex-wrap: wrap;
 }
-.rec-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #ffffff;
+.card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
-.badge-gray {
-    background-color: #1f2026;
+.card-cuisine-pill {
+    background-color: #1a1a1e;
+    border: 1px solid #2d2d34;
     color: #a0a0ab;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    font-weight: 700;
     padding: 3px 8px;
     border-radius: 4px;
-    border: 1px solid #2d2d34;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
-.rec-match-score {
-    font-size: 13px;
+.card-why-ai {
+    background-color: #16171a;
+    border: 1px solid rgba(45, 45, 52, 0.4);
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+.why-ai-header {
+    font-size: 11px;
+    font-weight: 700;
     color: #a0a0ab;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 6px;
 }
-.rec-match-val {
-    font-size: 13px;
-    font-weight: 700;
+.why-ai-text {
+    font-size: 12px;
     color: #a0a0ab;
-    margin-left: auto;
-    margin-right: 16px;
-}
-.rec-chevron {
-    color: #71717a;
-    font-size: 14px;
-    transition: transform 0.2s;
-    margin-left: 8px;
-}
-details[open] .rec-chevron {
-    transform: rotate(180deg);
+    line-height: 1.5;
 }
 
-/* Rationalization Engine Output */
-.rational-box {
-    padding: 0 20px 20px 20px;
+/* Footer style */
+.custom-footer {
     border-top: 1px solid #1f2026;
-    background-color: #151619;
-}
-.rational-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: #71717a;
-    letter-spacing: 1.5px;
-    margin-top: 16px;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-}
-.rational-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 13px;
-    color: #a0a0ab;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-.check-icon {
-    color: #10b981;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-/* Footer stats */
-.footer-stats {
+    padding: 40px 24px;
+    margin-top: 80px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #1f2026;
-    padding: 16px 0;
-    margin-top: 32px;
-}
-.stats-left {
-    display: flex;
+    flex-wrap: wrap;
     gap: 24px;
 }
-.stat-item {
-    font-size: 11px;
+.footer-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #E23744;
+}
+.footer-copyright {
+    font-size: 12px;
+    color: #71717a;
+    margin-top: 4px;
+}
+.footer-links {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
     color: #71717a;
 }
-.stat-item span {
-    font-weight: 700;
-    color: #a0a0ab;
-    margin-right: 4px;
+.footer-link {
+    color: #71717a;
+    text-decoration: none;
+    transition: color 0.2s;
 }
-.footer-btns {
-    display: flex;
-    gap: 12px;
-}
-.footer-btn {
-    background-color: #121316;
-    border: 1px solid #1f2026;
-    color: #a0a0ab;
-    padding: 6px 16px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.footer-btn:hover {
-    color: #ffffff;
-    border-color: #a0a0ab;
+.footer-link:hover {
+    color: white;
 }
 </style>
 """,
@@ -372,7 +357,7 @@ details[open] .rec-chevron {
 )
 
 
-@st.cache_resource(show_spinner="Loading restaurant dataset from Hugging Face…")
+@st.cache_resource(show_spinner="Loading Zomato dataset from Hugging Face…")
 def get_orchestrator() -> RecommendationOrchestrator:
     """Load dataset once per session (cached across reruns)."""
     orchestrator = RecommendationOrchestrator()
@@ -394,17 +379,6 @@ def _get_location_options(_orchestrator: RecommendationOrchestrator) -> list[str
     return sorted(locations, key=str.lower)
 
 
-def _get_bullet_points(explanation: str) -> list[str]:
-    """Split the LLM explanation into clean bullet points for Rationalization view."""
-    lines = [
-        line.strip("* \t-•") for line in explanation.split("\n") if line.strip()
-    ]
-    if len(lines) <= 1:
-        # Split by periods if it is a single paragraph
-        lines = [s.strip() for s in explanation.split(". ") if s.strip()]
-    return [l for l in lines if l]
-
-
 def _get_cost_symbols(cost: float | None, p33: float, p66: float) -> str:
     """Return currency symbols based on budget thresholds."""
     if cost is None:
@@ -416,20 +390,33 @@ def _get_cost_symbols(cost: float | None, p33: float, p66: float) -> str:
     return "₹₹₹"
 
 
-def _render_header_bar() -> None:
+def _render_custom_header() -> None:
     st.markdown(
         """
-    <div class="header-bar">
-        <div class="header-left">
-            <span class="brand-title">EATLACE AI</span>
-            <span class="badge"><span class="dot green-dot"></span>LLAMA 3.3 70B</span>
-            <span class="badge"><span class="dot green-dot"></span>GROQ CONNECTED</span>
+    <div class="custom-header">
+        <span class="brand-name">Eatlace AI</span>
+        <div>
+            <a href="#" class="nav-link">Discover</a>
+            <span class="user-avatar">👤</span>
         </div>
-        <div class="header-right">
-            <span class="icon-btn">⚙️</span>
-            <span class="icon-btn">📝</span>
-            <span class="icon-btn">💾</span>
-            <span class="avatar-box">👤</span>
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_custom_footer() -> None:
+    st.markdown(
+        """
+    <div class="custom-footer">
+        <div>
+            <div class="footer-logo">Eatlace AI</div>
+            <div class="footer-copyright">© 2024 Eatlace AI. High-performance dining.</div>
+        </div>
+        <div class="footer-links">
+            <a href="#" class="footer-link">Data Sources</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="#" class="footer-link">Feedback</a>
         </div>
     </div>
     """,
@@ -438,7 +425,8 @@ def _render_header_bar() -> None:
 
 
 def main() -> None:
-    _render_header_bar()
+    # Render unified layout header
+    _render_custom_header()
 
     try:
         orchestrator = get_orchestrator()
@@ -451,270 +439,290 @@ def main() -> None:
     p33 = meta.cost_percentile_33 or 300.0
     p66 = meta.cost_percentile_66 or 500.0
 
-    # Layout: Left side for preferences, Right side for output display
-    left_col, right_col = st.columns([1, 2.3], gap="large")
+    # Initialize session state variables
+    if "budget" not in st.session_state:
+        st.session_state.budget = "medium"
+    if "cuisine_input" not in st.session_state:
+        st.session_state.cuisine_input = ""
+    if "min_rating" not in st.session_state:
+        st.session_state.min_rating = 4.5
+    if "limit" not in st.session_state:
+        st.session_state.limit = 5
+    if "submitted" not in st.session_state:
+        st.session_state.submitted = False
 
-    # --- Left Column: Preference Engine ---
-    with left_col:
+    # --- Screen 1: Preference Ingestion Card ---
+    if not st.session_state.submitted:
         st.markdown(
             """
-        <div class="preference-engine-container">
-            <div class="panel-title">PREFERENCE ENGINE</div>
-            <div class="panel-subtitle">Analytical Parameters</div>
+        <div class="hero-container">
+            <span class="hero-pill">Discover Your Next Great Meal</span>
+            <h1 class="hero-title">Where should we <br><span class="hero-italic">eat tonight?</span></h1>
         </div>
         """,
             unsafe_allow_html=True,
         )
 
-        # Geospatial Anchor
-        st.markdown(
-            '<div class="section-label">GEOSPATIAL ANCHOR</div>',
-            unsafe_allow_html=True,
-        )
-        location = st.selectbox(
-            "Geospatial Anchor Location",
-            options=location_options,
-            index=None,
-            placeholder="Search location...",
-            label_visibility="collapsed",
-        )
+        # Centered form card container using columns for width limitation
+        c_left, c_mid, c_right = st.columns([1, 2.5, 1])
 
-        # Fiscal Allocation
-        if "budget" not in st.session_state:
-            st.session_state.budget = "medium"
+        with c_mid:
+            st.markdown('<div class="form-card">', unsafe_allow_html=True)
 
-        st.markdown(
-            '<div class="section-label">FISCAL ALLOCATION</div>',
-            unsafe_allow_html=True,
-        )
-        b_cols = st.columns(4)
-        budget_options = ["low", "medium", "high", "high_prem"]
-        budget_labels = ["₹", "₹₹", "₹₹₹", "₹↓↓↓"]
+            # Location Selectbox
+            st.markdown('<div class="field-label">LOCATION</div>', unsafe_allow_html=True)
+            location = st.selectbox(
+                "Location",
+                options=location_options,
+                index=None,
+                placeholder="Search location...",
+                label_visibility="collapsed",
+            )
 
-        for i, opt in enumerate(budget_options):
-            with b_cols[i]:
-                is_active = st.session_state.budget == opt
-                btn_lbl = budget_labels[i]
-                if st.button(
-                    btn_lbl,
-                    key=f"b_{opt}",
-                    use_container_width=True,
-                    type="primary" if is_active else "secondary",
-                ):
-                    st.session_state.budget = opt
-                    st.rerun()
-
-        # Culinary Taxonomy
-        if "cuisine_input" not in st.session_state:
-            st.session_state.cuisine_input = ""
-
-        st.markdown(
-            '<div class="section-label">CULINARY TAXONOMY</div>',
-            unsafe_allow_html=True,
-        )
-        cuisine_val = st.text_input(
-            "Cuisine",
-            value=st.session_state.cuisine_input,
-            placeholder="Search cuisine...",
-            label_visibility="collapsed",
-        )
-        if cuisine_val != st.session_state.cuisine_input:
-            st.session_state.cuisine_input = cuisine_val
-            st.rerun()
-
-        # Quick Cuisine Tags
-        c_cols = st.columns(4)
-        quick_tags = ["ITALIAN", "CHINESE", "JAPANESE", "CONTINENTAL"]
-        for i, tag in enumerate(quick_tags):
-            with c_cols[i]:
-                is_active = st.session_state.cuisine_input.upper() == tag
-                if st.button(
-                    tag,
-                    key=f"c_{tag}",
-                    use_container_width=True,
-                    type="primary" if is_active else "secondary",
-                ):
-                    st.session_state.cuisine_input = tag.title()
-                    st.rerun()
-
-        # Minimum Quality Threshold
-        if "min_rating" not in st.session_state:
-            st.session_state.min_rating = 4.2
-
-        st.markdown(
-            f'<div class="section-label" style="display: flex; justify-content: space-between;">'
-            f'<span>MINIMUM QUALITY THRESHOLD</span>'
-            f'<span style="color: #E23744; font-weight: 700;">{st.session_state.min_rating:.1f}+</span></div>',
-            unsafe_allow_html=True,
-        )
-        min_rating = st.slider(
-            "Minimum rating",
-            min_value=0.0,
-            max_value=5.0,
-            value=st.session_state.min_rating,
-            step=0.1,
-            label_visibility="collapsed",
-        )
-        if min_rating != st.session_state.min_rating:
-            st.session_state.min_rating = min_rating
-            st.rerun()
-
-        # Refine Search Button
-        refine_search = st.button(
-            "REFINE SEARCH",
-            key="refine_search_btn",
-            use_container_width=True,
-        )
-
-    # --- Right Column: Output Display ---
-    with right_col:
-        # Check if user submitted geospatial anchor
-        if not location:
+            # Budget Buttons
             st.markdown(
-                '<div style="text-align: center; padding: 100px 20px; color: #71717a;">'
-                '<h3>Select a Geospatial Anchor on the left to start</h3>'
-                '<p>Explore real-time recommendations using EATLACE AI.</p></div>',
+                '<div class="field-label" style="margin-top: 24px;">BUDGET</div>',
                 unsafe_allow_html=True,
             )
-            return
+            b_cols = st.columns(3)
+            budgets = ["low", "medium", "high"]
+            labels = ["Budget", "Medium", "Premium"]
+            for idx, opt in enumerate(budgets):
+                with b_cols[idx]:
+                    is_active = st.session_state.budget == opt
+                    btn_class = "budget-btn-active" if is_active else "budget-btn-inactive"
+                    if st.button(
+                        labels[idx],
+                        key=f"btn_budget_{opt}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.budget = opt
+                        st.rerun()
 
-        # Prepare preferences
-        norm_budget = (
-            "high"
-            if st.session_state.budget in ["high", "high_prem"]
-            else st.session_state.budget
-        )
-        try:
-            prefs = PreferenceValidator().validate(
-                location=location,
-                budget=norm_budget,
-                cuisine=st.session_state.cuisine_input or None,
-                min_rating=st.session_state.min_rating,
-                additional_preferences=None,
+            # Cuisine input
+            st.markdown(
+                '<div class="field-label" style="margin-top: 24px;">CUISINE & TAGS</div>',
+                unsafe_allow_html=True,
             )
-        except PreferenceValidationError as exc:
-            for err in exc.errors:
-                st.error(f"**{err.field}**: {err.message}")
-            return
+            cuisine_val = st.text_input(
+                "Cuisine input",
+                value=st.session_state.cuisine_input,
+                placeholder="Search any cuisine (e.g. Japanese, Rooftop, Vegan)...",
+                label_visibility="collapsed",
+            )
+            if cuisine_val != st.session_state.cuisine_input:
+                st.session_state.cuisine_input = cuisine_val
+                st.rerun()
 
-        # Trigger search
-        with st.spinner("Filtering Zomato candidates & fetching LLM rankings..."):
-            try:
-                result = orchestrator.recommend(prefs)
-            except LLMError as exc:
-                st.error(f"Groq API error: {exc}")
-                return
-            except OrchestratorError as exc:
-                st.error(f"Recommendation failed: {exc}")
-                return
+            # Cuisine tags below
+            tags = ["Italian", "North Indian", "Sushi", "Rooftop", "Live Music"]
+            t_cols = st.columns(5)
+            for idx, tag in enumerate(tags):
+                with t_cols[idx]:
+                    if st.button(
+                        tag,
+                        key=f"tag_{tag}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.cuisine_input = tag
+                        st.rerun()
 
-        # Filter warnings / Relaxation notices
+            # Min Rating and Limit selectors
+            st.markdown('<div style="margin-top: 24px;"></div>', unsafe_allow_html=True)
+            col_l, col_r = st.columns(2)
+
+            with col_l:
+                st.markdown(
+                    f'<div class="flex justify-between items-center mb-2">'
+                    f'<span class="field-label">MIN. RATING</span>'
+                    f'<span style="color: #E23744; font-weight: 700; font-size: 13px;">{st.session_state.min_rating:.1f}+</span>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+                min_rating = st.slider(
+                    "Min Rating Slider",
+                    min_value=0.0,
+                    max_value=5.0,
+                    value=st.session_state.min_rating,
+                    step=0.1,
+                    label_visibility="collapsed",
+                )
+                if min_rating != st.session_state.min_rating:
+                    st.session_state.min_rating = min_rating
+                    st.rerun()
+
+            with col_r:
+                st.markdown(
+                    '<div class="field-label">RESULTS TO SHOW</div>',
+                    unsafe_allow_html=True,
+                )
+                # Simple number input styled
+                limit = st.number_input(
+                    "Results count limit",
+                    min_value=1,
+                    max_value=20,
+                    value=st.session_state.limit,
+                    step=1,
+                    label_visibility="collapsed",
+                )
+                if limit != st.session_state.limit:
+                    st.session_state.limit = limit
+                    st.rerun()
+
+            # Additional preferences
+            st.markdown(
+                '<div class="field-label" style="margin-top: 24px;">ADDITIONAL PREFERENCES</div>',
+                unsafe_allow_html=True,
+            )
+            additional = st.text_area(
+                "Additional notes",
+                placeholder="Describe your ideal dining experience... (e.g. 'Looking for a quiet spot')",
+                label_visibility="collapsed",
+            )
+
+            # Get recommendations trigger
+            get_recs = st.button(
+                "Get AI Recommendations",
+                key="btn_get_recommendations",
+                use_container_width=True,
+            )
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            if get_recs:
+                if not location:
+                    st.error("Please select a location.")
+                else:
+                    # Execute recommendation request
+                    try:
+                        prefs = PreferenceValidator().validate(
+                            location=location,
+                            budget=st.session_state.budget,
+                            cuisine=st.session_state.cuisine_input or None,
+                            min_rating=st.session_state.min_rating,
+                            additional_preferences=additional or None,
+                        )
+                    except PreferenceValidationError as exc:
+                        for err in exc.errors:
+                            st.error(f"**{err.field}**: {err.message}")
+                        return
+
+                    # Running spinner and pipeline
+                    with st.spinner("Filtering Zomato candidates & running Groq AI models..."):
+                        try:
+                            result = orchestrator.recommend(prefs, top_k=st.session_state.limit)
+                            st.session_state.result = result
+                            st.session_state.selected_location = location
+                            st.session_state.selected_additional = additional
+                            st.session_state.submitted = True
+                            st.rerun()
+                        except LLMError as exc:
+                            st.error(f"Groq API error: {exc}")
+                        except OrchestratorError as exc:
+                            st.error(f"Failed to generate: {exc}")
+
+    # --- Screen 2: Recommendations Grid (2x2 Layout) ---
+    else:
+        result = st.session_state.result
+        location = st.session_state.selected_location
+        additional = st.session_state.selected_additional
+        cuisine = st.session_state.cuisine_input
+
+        # Back to Search button
+        if st.button("← Back to search", key="btn_back_to_search"):
+            st.session_state.submitted = False
+            st.rerun()
+
+        # Recommendation Summary card
+        cuisine_lbl = cuisine or "Fine"
+        summary_text = (
+            result.summary
+            if result.summary
+            else f"Engineered matches for {cuisine_lbl} Dining in {location}"
+        )
+        
+        # Prepare tags list
+        chips_html = f'<div class="summary-chip">Budget: {st.session_state.budget.upper()}</div>'
+        if cuisine:
+            chips_html += f'<div class="summary-chip">Cuisine: {cuisine}</div>'
+        if additional:
+            chips_html += f'<div class="summary-chip">Preferences: {additional}</div>'
+
+        st.markdown(
+            f"""
+        <div class="results-summary-card">
+            <div class="summary-left">
+                <div class="summary-title">Recommendation Summary</div>
+                <div class="summary-sub">{summary_text}</div>
+                <div class="summary-chip-container">{chips_html}</div>
+            </div>
+            <div class="confidence-box">
+                <div class="confidence-val">98%</div>
+                <div class="confidence-lbl">AI Confidence</div>
+            </div>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+
+        if result.used_fallback:
+            st.warning("Showing fallback ratings-based results. Groq API is temporarily unavailable.")
+
         if result.filter_messages:
             for msg in result.filter_messages:
                 st.info(msg)
 
-        if result.used_fallback:
-            st.warning("EATLACE fallback mode activated (Groq API error).")
-
         if not result.recommendations:
-            st.warning(
-                "No restaurants found matching active parameters. Try a broader location or lower rating threshold."
-            )
+            st.warning("No restaurants found. Try broader preferences.")
             return
 
-        # Render Recommendation Summary
-        cuisine_label = st.session_state.cuisine_input or "any cuisines"
-        summary_text = (
-            result.summary
-            if result.summary
-            else f"Based on your preferences for {cuisine_label} in {location}, "
-            f"EATLACE AI has identified {len(result.recommendations)} optimal destinations."
-        )
-        st.markdown(
-            f"""
-        <div class="summary-card">
-            <div class="summary-text">
-                <div class="summary-title">Recommendation Summary</div>
-                <div class="summary-desc">{summary_text}</div>
-            </div>
-            <div class="confidence-box">
-                <div class="confidence-val">98.4%</div>
-                <div class="confidence-lbl">Model Confidence</div>
-            </div>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
+        # Render 2x2 grid using Streamlit columns
+        cols = st.columns(2)
+        scores = [100, 94, 89, 82, 78]
 
-        # Render Recommendation Cards
-        scores = [99, 94, 89, 82, 78]
-
-        for i, rec in enumerate(result.recommendations):
+        for idx, rec in enumerate(result.recommendations):
             r = rec.restaurant
-            rank = rec.rank
-            cuisines = ", ".join(r.cuisines) if r.cuisines else "N/A"
-            primary_cuisine = r.cuisines[0].upper() if r.cuisines else "RESTAURANT"
+            score = scores[idx] if idx < len(scores) else max(50, 99 - idx * 5)
+            cuisines_text = ", ".join(r.cuisines) if r.cuisines else "N/A"
             cost_sym = _get_cost_symbols(r.estimated_cost, p33, p66)
-            score = scores[i] if i < len(scores) else max(60, 99 - i * 6)
-            is_top = "top-rank" if rank == 1 else ""
-            is_open = "open" if rank == 1 else ""
+            cost_val = f"₹{r.estimated_cost:,.0f}" if r.estimated_cost else "N/A"
+            
+            # Sub-tags formatting
+            cuisine_pills = ""
+            for c in r.cuisines[:3]:
+                cuisine_pills += f'<span class="card-cuisine-pill">{c.upper()}</span> '
 
-            # Rationalization Engine Points
-            rational_items_html = ""
-            bullets = _get_bullet_points(rec.explanation)
-            for bullet in bullets:
-                rational_items_html += f"""
-                <div class="rational-item">
-                    <span class="check-icon">✓</span>
-                    <span>{bullet}</span>
-                </div>
-                """
+            # Column selection
+            grid_col = cols[idx % 2]
 
-            st.markdown(
-                f"""
-            <details class="rec-card" {is_open}>
-                <summary>
-                    <div class="rank-badge {is_top}">#{rank}</div>
-                    <div class="rec-info">
-                        <div class="rec-name-row">
-                            <span class="rec-name">{r.name}</span>
-                            <span class="badge-gray">{r.rating:.1f} ★</span>
-                            <span class="badge-gray">{cost_sym}</span>
-                            <span class="badge-gray">{primary_cuisine}</span>
+            with grid_col:
+                st.markdown(
+                    f"""
+                <div class="grid-card">
+                    <div style="flex: 1;">
+                        <span class="card-header-tag">#{rec.rank} &nbsp;{score}% MATCH</span>
+                        <h3 class="card-title">{r.name}</h3>
+                        <div class="card-meta">
+                            <span class="card-meta-item">📍 {r.location}</span>
+                            <span class="card-meta-item" style="color: #fbbf24;">★ {r.rating:.1f}</span>
+                            <span class="card-meta-item">{cost_sym} {cost_val} for two</span>
                         </div>
-                        <div class="rec-match-score">
-                            <span class="dot green-dot"></span>
-                            {score}% Match Score — Matches high rating & specific preference intent
+                        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">
+                            {cuisine_pills}
                         </div>
                     </div>
-                    <div class="rec-chevron">▼</div>
-                </summary>
-                <div class="rational-box">
-                    <div class="rational-title">Rationalization Engine Output</div>
-                    {rational_items_html}
+                    <div class="card-why-ai">
+                        <div class="why-ai-header">✨ Why AI Picked It</div>
+                        <p class="why-ai-text">{rec.explanation}</p>
+                    </div>
                 </div>
-            </details>
-            """,
-                unsafe_allow_html=True,
-            )
+                <div style="margin-bottom: 24px;"></div>
+                """,
+                    unsafe_allow_html=True,
+                )
 
-        # Footer Stats & Actions
-        st.markdown(
-            """
-        <div class="footer-stats">
-            <div class="stats-left">
-                <div class="stat-item"><span>DATA REFRESH:</span> 2 min ago</div>
-                <div class="stat-item"><span>COMPUTE USAGE:</span> 1.2 TFLOPs</div>
-                <div class="stat-item"><span>API LATENCY:</span> 142ms</div>
-            </div>
-            <div class="footer-btns">
-                <button class="footer-btn">EXPORT REPORT</button>
-                <button class="footer-btn">AUDIT TRAIL</button>
-            </div>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
+    # Render footer on both screens
+    _render_custom_footer()
 
 
 if __name__ == "__main__":

@@ -48,8 +48,7 @@ class GroqLLMClient(LLMClient):
 
         if not self.api_key:
             raise LLMError(
-                "GROQ_API_KEY is not set. Add it to your .env file "
-                "(see .env.example). Get a key at https://console.groq.com/keys"
+                "GROQ_API_KEY is not set. Add it to your .env file or Streamlit Cloud Secrets settings. Get a key at https://console.groq.com/keys"
             )
 
     def complete(self, system: str, user: str) -> str:

@@ -83,8 +83,7 @@ class RecommendationOrchestrator:
             and self.recommendation_engine.llm_client is None
         ):
             raise LLMError(
-                "GROQ_API_KEY is not set. Add it to your .env file "
-                "(see .env.example)."
+                "GROQ_API_KEY is not set. Add it to your .env file or Streamlit Cloud Secrets settings."
             )
 
         t1 = time.perf_counter()

@@ -607,7 +607,16 @@ def main() -> None:
                                 st.session_state.submitted = True
                                 st.rerun()
                             except LLMError as exc:
-                                st.error(f"Groq API error: {exc}")
+                                avail_keys = []
+                                try:
+                                    if hasattr(st, "secrets"):
+                                        avail_keys = list(st.secrets.keys())
+                                except Exception as e:
+                                    avail_keys = [f"Error listing: {e}"]
+                                st.error(
+                                    f"Groq API error: {exc}\n\n"
+                                    f"**Debug Info (Available Streamlit Secret Keys)**: `{avail_keys}`"
+                                )
                             except OrchestratorError as exc:
                                 st.error(f"Failed to generate: {exc}")
 

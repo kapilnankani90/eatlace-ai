@@ -128,52 +128,42 @@ header {visibility: hidden;}
     text-transform: uppercase;
 }
 
-/* Styled HTML inputs wrapper */
-.form-card {
-    background-color: #121316;
-    border: 1px solid #1f2026;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    max-width: 650px;
-    margin: 0 auto;
+/* Streamlit Container Border Custom Styling */
+div[data-testid="stVerticalBlockBorderContainer"] {
+    background-color: #121316 !important;
+    border: 1px solid #1f2026 !important;
+    border-radius: 12px !important;
+    padding: 32px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Standard button override */
-div.stButton > button {
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-}
-div.stButton > button[key="btn_get_recommendations"] {
-    background-color: #E23744 !important;
-    color: white !important;
-    border: none !important;
-    height: 52px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    letter-spacing: 1px !important;
-    transition: all 0.2s !important;
-    box-shadow: 0 4px 14px rgba(226, 55, 68, 0.2) !important;
-}
-div.stButton > button[key="btn_get_recommendations"]:hover {
-    background-color: #ff4d5a !important;
-    transform: scale(1.01) !important;
-}
-
-/* Segmented Buttons */
-div.stButton > button.budget-btn-inactive {
-    background-color: transparent !important;
-    color: #a0a0ab !important;
-    border: 1px solid #2d2d34 !important;
-}
-div.stButton > button.budget-btn-inactive:hover {
-    color: white !important;
-    border-color: #a0a0ab !important;
-}
-div.stButton > button.budget-btn-active {
+/* Primary buttons (Get AI recommendations, active segments) */
+div.stButton > button[kind="primary"] {
     background-color: #E23744 !important;
     color: white !important;
     border: 1px solid #E23744 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+div.stButton > button[kind="primary"]:hover {
+    background-color: #ff4d5a !important;
+    border-color: #ff4d5a !important;
+}
+
+/* Secondary buttons (inactive segments, cuisine tags) */
+div.stButton > button[kind="secondary"] {
+    background-color: transparent !important;
+    color: #a0a0ab !important;
+    border: 1px solid #2d2d34 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+div.stButton > button[kind="secondary"]:hover {
+    color: white !important;
+    border-color: #a0a0ab !important;
+    background-color: #1a1a1e !important;
 }
 
 /* Results Summary */
@@ -394,7 +384,7 @@ def _render_custom_header() -> None:
     st.markdown(
         """
     <div class="custom-header">
-        <span class="brand-name">Eatlace AI</span>
+        <span class="brand-name" onclick="window.location.reload()">Eatlace AI</span>
         <div>
             <a href="#" class="nav-link">Discover</a>
             <span class="user-avatar">👤</span>
@@ -467,159 +457,159 @@ def main() -> None:
         c_left, c_mid, c_right = st.columns([1, 2.5, 1])
 
         with c_mid:
-            st.markdown('<div class="form-card">', unsafe_allow_html=True)
-
-            # Location Selectbox
-            st.markdown('<div class="field-label">LOCATION</div>', unsafe_allow_html=True)
-            location = st.selectbox(
-                "Location",
-                options=location_options,
-                index=None,
-                placeholder="Search location...",
-                label_visibility="collapsed",
-            )
-
-            # Budget Buttons
-            st.markdown(
-                '<div class="field-label" style="margin-top: 24px;">BUDGET</div>',
-                unsafe_allow_html=True,
-            )
-            b_cols = st.columns(3)
-            budgets = ["low", "medium", "high"]
-            labels = ["Budget", "Medium", "Premium"]
-            for idx, opt in enumerate(budgets):
-                with b_cols[idx]:
-                    is_active = st.session_state.budget == opt
-                    btn_class = "budget-btn-active" if is_active else "budget-btn-inactive"
-                    if st.button(
-                        labels[idx],
-                        key=f"btn_budget_{opt}",
-                        use_container_width=True,
-                    ):
-                        st.session_state.budget = opt
-                        st.rerun()
-
-            # Cuisine input
-            st.markdown(
-                '<div class="field-label" style="margin-top: 24px;">CUISINE & TAGS</div>',
-                unsafe_allow_html=True,
-            )
-            cuisine_val = st.text_input(
-                "Cuisine input",
-                value=st.session_state.cuisine_input,
-                placeholder="Search any cuisine (e.g. Japanese, Rooftop, Vegan)...",
-                label_visibility="collapsed",
-            )
-            if cuisine_val != st.session_state.cuisine_input:
-                st.session_state.cuisine_input = cuisine_val
-                st.rerun()
-
-            # Cuisine tags below
-            tags = ["Italian", "North Indian", "Sushi", "Rooftop", "Live Music"]
-            t_cols = st.columns(5)
-            for idx, tag in enumerate(tags):
-                with t_cols[idx]:
-                    if st.button(
-                        tag,
-                        key=f"tag_{tag}",
-                        use_container_width=True,
-                    ):
-                        st.session_state.cuisine_input = tag
-                        st.rerun()
-
-            # Min Rating and Limit selectors
-            st.markdown('<div style="margin-top: 24px;"></div>', unsafe_allow_html=True)
-            col_l, col_r = st.columns(2)
-
-            with col_l:
-                st.markdown(
-                    f'<div class="flex justify-between items-center mb-2">'
-                    f'<span class="field-label">MIN. RATING</span>'
-                    f'<span style="color: #E23744; font-weight: 700; font-size: 13px;">{st.session_state.min_rating:.1f}+</span>'
-                    f'</div>',
-                    unsafe_allow_html=True,
-                )
-                min_rating = st.slider(
-                    "Min Rating Slider",
-                    min_value=0.0,
-                    max_value=5.0,
-                    value=st.session_state.min_rating,
-                    step=0.1,
+            with st.container(border=True):
+                # Location Selectbox
+                st.markdown('<div class="field-label">LOCATION</div>', unsafe_allow_html=True)
+                location = st.selectbox(
+                    "Location",
+                    options=location_options,
+                    index=None,
+                    placeholder="Search location...",
                     label_visibility="collapsed",
                 )
-                if min_rating != st.session_state.min_rating:
-                    st.session_state.min_rating = min_rating
-                    st.rerun()
 
-            with col_r:
+                # Budget Buttons
                 st.markdown(
-                    '<div class="field-label">RESULTS TO SHOW</div>',
+                    '<div class="field-label" style="margin-top: 24px;">BUDGET</div>',
                     unsafe_allow_html=True,
                 )
-                # Simple number input styled
-                limit = st.number_input(
-                    "Results count limit",
-                    min_value=1,
-                    max_value=20,
-                    value=st.session_state.limit,
-                    step=1,
-                    label_visibility="collapsed",
-                )
-                if limit != st.session_state.limit:
-                    st.session_state.limit = limit
-                    st.rerun()
-
-            # Additional preferences
-            st.markdown(
-                '<div class="field-label" style="margin-top: 24px;">ADDITIONAL PREFERENCES</div>',
-                unsafe_allow_html=True,
-            )
-            additional = st.text_area(
-                "Additional notes",
-                placeholder="Describe your ideal dining experience... (e.g. 'Looking for a quiet spot')",
-                label_visibility="collapsed",
-            )
-
-            # Get recommendations trigger
-            get_recs = st.button(
-                "Get AI Recommendations",
-                key="btn_get_recommendations",
-                use_container_width=True,
-            )
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-            if get_recs:
-                if not location:
-                    st.error("Please select a location.")
-                else:
-                    # Execute recommendation request
-                    try:
-                        prefs = PreferenceValidator().validate(
-                            location=location,
-                            budget=st.session_state.budget,
-                            cuisine=st.session_state.cuisine_input or None,
-                            min_rating=st.session_state.min_rating,
-                            additional_preferences=additional or None,
-                        )
-                    except PreferenceValidationError as exc:
-                        for err in exc.errors:
-                            st.error(f"**{err.field}**: {err.message}")
-                        return
-
-                    # Running spinner and pipeline
-                    with st.spinner("Filtering Zomato candidates & running Groq AI models..."):
-                        try:
-                            result = orchestrator.recommend(prefs, top_k=st.session_state.limit)
-                            st.session_state.result = result
-                            st.session_state.selected_location = location
-                            st.session_state.selected_additional = additional
-                            st.session_state.submitted = True
+                b_cols = st.columns(3)
+                budgets = ["low", "medium", "high"]
+                labels = ["Budget", "Medium", "Premium"]
+                for idx, opt in enumerate(budgets):
+                    with b_cols[idx]:
+                        is_active = st.session_state.budget == opt
+                        if st.button(
+                            labels[idx],
+                            key=f"btn_budget_{opt}",
+                            use_container_width=True,
+                            type="primary" if is_active else "secondary"
+                        ):
+                            st.session_state.budget = opt
                             st.rerun()
-                        except LLMError as exc:
-                            st.error(f"Groq API error: {exc}")
-                        except OrchestratorError as exc:
-                            st.error(f"Failed to generate: {exc}")
+
+                # Cuisine input
+                st.markdown(
+                    '<div class="field-label" style="margin-top: 24px;">CUISINE & TAGS</div>',
+                    unsafe_allow_html=True,
+                )
+                cuisine_val = st.text_input(
+                    "Cuisine input",
+                    value=st.session_state.cuisine_input,
+                    placeholder="Search any cuisine (e.g. Japanese, Rooftop, Vegan)...",
+                    label_visibility="collapsed",
+                )
+                if cuisine_val != st.session_state.cuisine_input:
+                    st.session_state.cuisine_input = cuisine_val
+                    st.rerun()
+
+                # Cuisine tags below
+                tags = ["Italian", "North Indian", "Sushi", "Rooftop", "Live Music"]
+                t_cols = st.columns(5)
+                for idx, tag in enumerate(tags):
+                    with t_cols[idx]:
+                        is_active = st.session_state.cuisine_input == tag
+                        if st.button(
+                            tag,
+                            key=f"tag_{tag}",
+                            use_container_width=True,
+                            type="primary" if is_active else "secondary"
+                        ):
+                            st.session_state.cuisine_input = tag
+                            st.rerun()
+
+                # Min Rating and Limit selectors
+                st.markdown('<div style="margin-top: 24px;"></div>', unsafe_allow_html=True)
+                col_l, col_r = st.columns(2)
+
+                with col_l:
+                    st.markdown(
+                        f'<div class="flex justify-between items-center mb-2">'
+                        f'<span class="field-label">MIN. RATING</span>'
+                        f'<span style="color: #E23744; font-weight: 700; font-size: 13px;">{st.session_state.min_rating:.1f}+</span>'
+                        f'</div>',
+                        unsafe_allow_html=True,
+                    )
+                    min_rating = st.slider(
+                        "Min Rating Slider",
+                        min_value=0.0,
+                        max_value=5.0,
+                        value=st.session_state.min_rating,
+                        step=0.1,
+                        label_visibility="collapsed",
+                    )
+                    if min_rating != st.session_state.min_rating:
+                        st.session_state.min_rating = min_rating
+                        st.rerun()
+
+                with col_r:
+                    st.markdown(
+                        '<div class="field-label">RESULTS TO SHOW</div>',
+                        unsafe_allow_html=True,
+                    )
+                    # Simple number input styled
+                    limit = st.number_input(
+                        "Results count limit",
+                        min_value=1,
+                        max_value=20,
+                        value=st.session_state.limit,
+                        step=1,
+                        label_visibility="collapsed",
+                    )
+                    if limit != st.session_state.limit:
+                        st.session_state.limit = limit
+                        st.rerun()
+
+                # Additional preferences
+                st.markdown(
+                    '<div class="field-label" style="margin-top: 24px;">ADDITIONAL PREFERENCES</div>',
+                    unsafe_allow_html=True,
+                )
+                additional = st.text_area(
+                    "Additional notes",
+                    placeholder="Describe your ideal dining experience... (e.g. 'Looking for a quiet spot')",
+                    label_visibility="collapsed",
+                )
+
+                # Get recommendations trigger
+                get_recs = st.button(
+                    "Get AI Recommendations",
+                    key="btn_get_recommendations",
+                    use_container_width=True,
+                    type="primary"
+                )
+
+                if get_recs:
+                    if not location:
+                        st.error("Please select a location.")
+                    else:
+                        # Execute recommendation request
+                        try:
+                            prefs = PreferenceValidator().validate(
+                                location=location,
+                                budget=st.session_state.budget,
+                                cuisine=st.session_state.cuisine_input or None,
+                                min_rating=st.session_state.min_rating,
+                                additional_preferences=additional or None,
+                            )
+                        except PreferenceValidationError as exc:
+                            for err in exc.errors:
+                                st.error(f"**{err.field}**: {err.message}")
+                            return
+
+                        # Running spinner and pipeline
+                        with st.spinner("Filtering Zomato candidates & running Groq AI models..."):
+                            try:
+                                result = orchestrator.recommend(prefs, top_k=st.session_state.limit)
+                                st.session_state.result = result
+                                st.session_state.selected_location = location
+                                st.session_state.selected_additional = additional
+                                st.session_state.submitted = True
+                                st.rerun()
+                            except LLMError as exc:
+                                st.error(f"Groq API error: {exc}")
+                            except OrchestratorError as exc:
+                                st.error(f"Failed to generate: {exc}")
 
     # --- Screen 2: Recommendations Grid (2x2 Layout) ---
     else:

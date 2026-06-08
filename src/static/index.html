@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eatlace AI - Restaurant Recommendation System</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                        playfair: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        dark: {
+                            DEFAULT: '#0c0d0f',
+                            card: '#121316',
+                            border: '#1f2026',
+                            highlight: '#1a1a1e',
+                            btnBorder: '#2d2d34',
+                        },
+                        brand: {
+                            red: '#E23744',
+                            redHover: '#ff4d5a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0c0d0f;
+            color: #e2e4e9;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0d0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2026;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2d2d34;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Header bar -->
+    <header class="border-b border-dark-border px-6 py-4 flex justify-between items-center bg-[#0d0e11]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <span class="font-outfit text-2xl font-extrabold text-brand-red tracking-wider cursor-pointer" onclick="resetApp()">Eatlace AI</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm">
+            <a href="#" class="text-gray-400 hover:text-white transition" id="nav-discover" onclick="resetApp()">Discover</a>
+            <div class="w-8 h-8 rounded bg-brand-red text-white font-bold flex items-center justify-center text-xs">👤</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        
+        <!-- Screen 1: Search Form -->
+        <section id="screen-search" class="fade-in max-w-2xl mx-auto">
+            <div class="text-center mb-10">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-brand-red/10 border border-brand-red/20 text-xs font-bold text-brand-red tracking-widest uppercase mb-4">Discover Your Next Great Meal</span>
+                <h1 class="font-outfit text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+                    Where should we <br><span class="font-playfair text-brand-red italic font-medium">eat tonight?</span>
+                </h1>
+            </div>
+
+            <!-- Form Card -->
+            <div class="bg-dark-card border border-dark-border rounded-xl p-6 md:p-8 shadow-2xl relative">
+                <!-- Location -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-gray-500 tracking-wider mb-2">LOCATION</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">📍</span>
+                        <select id="input-location" class="w-full bg-dark-highlight border border-dark-border rounded-lg py-3 pl-10 pr-10 text-white font-medium focus:outline-none focus:border-gray-500 appearance-none cursor-pointer">
+                            <option value="" disabled selected>Search location...</option>
+                        </select>
+                        <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 pointer-events-none">▼</span>
+                    </div>
+                </div>
+
+                <!-- Budget -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-gray-500 tracking-wider mb-2">BUDGET</label>
+                    <div class="grid grid-cols-3 bg-dark-highlight border border-dark-border rounded-lg p-1.5 gap-2">
+                        <button type="button" onclick="setBudget('low')" id="btn-budget-low" class="py-2 px-4 rounded font-semibold text-sm transition text-center focus:outline-none">Budget</button>
+                        <button type="button" onclick="setBudget('medium')" id="btn-budget-medium" class="py-2 px-4 rounded font-semibold text-sm transition text-center focus:outline-none">Medium</button>
+                        <button type="button" onclick="setBudget('high')" id="btn-budget-high" class="py-2 px-4 rounded font-semibold text-sm transition text-center focus:outline-none">Premium</button>
+                    </div>
+                </div>
+
+                <!-- Cuisine & Tags -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-gray-500 tracking-wider mb-2">CUISINE & TAGS</label>
+                    <div class="relative mb-3">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">🔍</span>
+                        <input type="text" id="input-cuisine" placeholder="Search any cuisine (e.g. Japanese, Rooftop, Vegan)..." class="w-full bg-dark-highlight border border-dark-border rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-gray-500">
+                    </div>
+                    <!-- Quick Tags -->
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="setQuickCuisine('Italian')" class="px-3.5 py-1.5 bg-dark-highlight hover:bg-dark-border text-gray-400 hover:text-white rounded-full text-xs font-semibold border border-dark-border transition">Italian</button>
+                        <button type="button" onclick="setQuickCuisine('North Indian')" class="px-3.5 py-1.5 bg-dark-highlight hover:bg-dark-border text-gray-400 hover:text-white rounded-full text-xs font-semibold border border-dark-border transition">North Indian</button>
+                        <button type="button" onclick="setQuickCuisine('Sushi')" class="px-3.5 py-1.5 bg-dark-highlight hover:bg-dark-border text-gray-400 hover:text-white rounded-full text-xs font-semibold border border-dark-border transition">Sushi</button>
+                        <button type="button" onclick="setQuickCuisine('Rooftop')" class="px-3.5 py-1.5 bg-dark-highlight hover:bg-dark-border text-gray-400 hover:text-white rounded-full text-xs font-semibold border border-dark-border transition">Rooftop</button>
+                        <button type="button" onclick="setQuickCuisine('Live Music')" class="px-3.5 py-1.5 bg-dark-highlight hover:bg-dark-border text-gray-400 hover:text-white rounded-full text-xs font-semibold border border-dark-border transition">Live Music</button>
+                    </div>
+                </div>
+
+                <!-- Min Rating & Results Count -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-bold text-gray-500 tracking-wider">MIN. RATING</label>
+                            <span id="label-rating" class="text-brand-red font-bold text-sm">4.5+</span>
+                        </div>
+                        <input type="range" id="input-rating" min="0.0" max="5.0" step="0.1" value="4.5" oninput="updateRatingLabel(this.value)" class="w-full h-1 bg-dark-border rounded-lg appearance-none cursor-pointer accent-brand-red focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 tracking-wider mb-2">RESULTS TO SHOW</label>
+                        <div class="flex bg-dark-highlight border border-dark-border rounded-lg items-center overflow-hidden">
+                            <button type="button" onclick="adjustLimit(-1)" class="py-2.5 px-4 font-bold text-gray-400 hover:text-white hover:bg-dark-border transition">-</button>
+                            <input type="number" id="input-limit" value="5" min="1" max="20" readonly class="w-full bg-transparent text-center text-white font-semibold focus:outline-none focus:ring-0 select-none pointer-events-none">
+                            <button type="button" onclick="adjustLimit(1)" class="py-2.5 px-4 font-bold text-gray-400 hover:text-white hover:bg-dark-border transition">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Preferences -->
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-gray-500 tracking-wider mb-2">ADDITIONAL PREFERENCES</label>
+                    <textarea id="input-additional" rows="3" placeholder="Describe your ideal dining experience... (e.g. 'Looking for a quiet spot for a date with great cocktails and low lighting')" class="w-full bg-dark-highlight border border-dark-border rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-gray-500 text-sm resize-none"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="button" onclick="getRecommendations()" class="w-full bg-brand-red hover:bg-brand-redHover py-4 rounded-xl font-bold text-white tracking-wider transition-all duration-200 transform hover:scale-[1.01] shadow-lg shadow-brand-red/20 focus:outline-none">Get AI Recommendations</button>
+
+                <!-- Loading steps -->
+                <div id="loading-steps" class="hidden mt-8 border-t border-dark-border pt-6 space-y-3.5">
+                    <div id="step-1" class="flex items-center gap-3 text-sm text-gray-500 transition">
+                        <span class="step-icon">○</span>
+                        <span class="step-text">Applying location & budget filters...</span>
+                    </div>
+                    <div id="step-2" class="flex items-center gap-3 text-sm text-gray-500 transition">
+                        <span class="step-icon">○</span>
+                        <span class="step-text">Ranking results with Eatlace Neural Model...</span>
+                    </div>
+                    <div id="step-3" class="flex items-center gap-3 text-sm text-gray-500 transition">
+                        <span class="step-icon">○</span>
+                        <span class="step-text">Generating personalized dish explanations...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 2: Recommendations Results Grid -->
+        <section id="screen-results" class="fade-in hidden space-y-8">
+            
+            <button onclick="resetApp()" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition font-medium">
+                ← Back to search
+            </button>
+
+            <!-- Summary header -->
+            <div class="bg-dark-card border border-dark-border rounded-xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="space-y-3">
+                    <h2 class="text-2xl font-bold text-white" id="results-title">Recommendation Summary</h2>
+                    <p class="text-sm text-gray-400 leading-relaxed max-w-2xl" id="results-summary">
+                        Engineered matches for Fine Dining in Colaba, Mumbai
+                    </p>
+                    <div class="flex flex-wrap gap-2" id="summary-chips">
+                        <!-- Chips dynamically rendered -->
+                    </div>
+                </div>
+                <div class="bg-dark-highlight border border-dark-border p-4 rounded-lg text-center flex-shrink-0 min-w-[140px] relative overflow-hidden">
+                    <div class="text-3xl font-extrabold text-brand-red font-outfit" id="summary-confidence">98%</div>
+                    <div class="text-[9px] font-bold text-gray-500 tracking-widest uppercase mt-1">AI Confidence</div>
+                </div>
+            </div>
+
+            <!-- Warning fallback banner -->
+            <div id="fallback-banner" class="hidden bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 p-4 rounded-lg text-sm flex gap-3">
+                ⚠️ <span>Showing rating-based fallback recommendations. Groq API is temporarily unavailable or returned an invalid format.</span>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="results-grid">
+                <!-- Recommendations dynamic cards -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-border mt-20 bg-[#0c0d0f]">
+        <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="space-y-2 text-center md:text-left">
+                <span class="font-outfit text-xl font-extrabold text-brand-red tracking-wider">Eatlace AI</span>
+                <p class="text-xs text-gray-500">© 2024 Eatlace AI. High-performance dining.</p>
+            </div>
+            <div class="flex gap-6 text-xs text-gray-500">
+                <a href="#" class="hover:text-white transition">Data Sources</a>
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Feedback</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // State
+        let selectedBudget = 'medium';
+        let locations = [];
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            setBudget('medium');
+            loadLocations();
+        });
+
+        function setBudget(tier) {
+            selectedBudget = tier;
+            // Reset styles
+            ['low', 'medium', 'high'].forEach(t => {
+                const btn = document.getElementById(`btn-budget-${t}`);
+                if (btn) {
+                    btn.className = "py-2 px-4 rounded font-semibold text-sm transition text-center focus:outline-none text-gray-400 hover:text-white bg-transparent";
+                }
+            });
+            // Set active
+            const activeBtn = document.getElementById(`btn-budget-${tier}`);
+            if (activeBtn) {
+                activeBtn.className = "py-2 px-4 rounded font-semibold text-sm transition text-center focus:outline-none text-white bg-brand-red shadow shadow-brand-red/20";
+            }
+        }
+
+        function setQuickCuisine(name) {
+            const input = document.getElementById('input-cuisine');
+            input.value = name;
+        }
+
+        function updateRatingLabel(val) {
+            document.getElementById('label-rating').innerText = `${parseFloat(val).toFixed(1)}+`;
+        }
+
+        function adjustLimit(delta) {
+            const input = document.getElementById('input-limit');
+            let val = parseInt(input.value) + delta;
+            val = Math.max(1, Math.min(20, val));
+            input.value = val;
+        }
+
+        async function loadLocations() {
+            try {
+                const res = await fetch('/api/locations');
+                if (!res.ok) throw new Error('Failed to fetch locations');
+                const data = await res.json();
+                locations = data.locations;
+                
+                const select = document.getElementById('input-location');
+                // clear default select
+                select.innerHTML = '<option value="" disabled selected>Search location...</option>';
+                locations.forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = loc;
+                    opt.textContent = loc;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function getRecommendations() {
+            const location = document.getElementById('input-location').value;
+            const cuisine = document.getElementById('input-cuisine').value;
+            const rating = parseFloat(document.getElementById('input-rating').value);
+            const limit = parseInt(document.getElementById('input-limit').value);
+            const additional = document.getElementById('input-additional').value;
+
+            if (!location) {
+                alert("Please select a location.");
+                return;
+            }
+
+            // Show loading steps
+            const loadingPanel = document.getElementById('loading-steps');
+            loadingPanel.classList.remove('hidden');
+
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+
+            // Reset loading steps
+            [step1, step2, step3].forEach(step => {
+                step.className = "flex items-center gap-3 text-sm text-gray-500 transition";
+                step.querySelector('.step-icon').innerText = "○";
+            });
+
+            // Start Step 1
+            step1.className = "flex items-center gap-3 text-sm text-white font-medium";
+            step1.querySelector('.step-icon').innerText = "⏳";
+            await sleep(800);
+
+            step1.className = "flex items-center gap-3 text-sm text-[#10b981] font-semibold";
+            step1.querySelector('.step-icon').innerText = "✓";
+
+            // Start Step 2
+            step2.className = "flex items-center gap-3 text-sm text-white font-medium";
+            step2.querySelector('.step-icon').innerText = "⏳";
+
+            // API request
+            try {
+                const res = await fetch('/api/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location: location,
+                        budget: selectedBudget,
+                        cuisine: cuisine || null,
+                        min_rating: rating,
+                        limit: limit,
+                        additional: additional || null
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || 'Failed to generate recommendations');
+                }
+
+                const result = await res.json();
+
+                // Finish Step 2
+                await sleep(600);
+                step2.className = "flex items-center gap-3 text-sm text-[#10b981] font-semibold";
+                step2.querySelector('.step-icon').innerText = "✓";
+
+                // Start Step 3
+                step3.className = "flex items-center gap-3 text-sm text-white font-medium";
+                step3.querySelector('.step-icon').innerText = "⏳";
+                await sleep(500);
+
+                step3.className = "flex items-center gap-3 text-sm text-[#10b981] font-semibold";
+                step3.querySelector('.step-icon').innerText = "✓";
+                await sleep(300);
+
+                renderResults(result, location, cuisine, additional);
+
+                // Hide loading steps
+                loadingPanel.classList.add('hidden');
+
+                // Toggle screen view
+                document.getElementById('screen-search').classList.add('hidden');
+                document.getElementById('screen-results').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                // Reset loading panel
+                loadingPanel.classList.add('hidden');
+            }
+        }
+
+        function renderResults(result, location, cuisine, additional) {
+            // Title & summary info
+            document.getElementById('results-summary').textContent = `Engineered matches for ${cuisine ? cuisine : 'Fine'} Dining in ${location}`;
+            document.getElementById('summary-confidence').textContent = `${result.confidence}%`;
+
+            // Setup summary chips
+            const chipsContainer = document.getElementById('summary-chips');
+            chipsContainer.innerHTML = '';
+
+            const budgetChip = document.createElement('span');
+            budgetChip.className = "px-3 py-1 bg-dark-highlight border border-dark-border text-xs text-gray-400 rounded-full font-semibold";
+            budgetChip.textContent = `Budget: ${selectedBudget.toUpperCase()}`;
+            chipsContainer.appendChild(budgetChip);
+
+            if (cuisine) {
+                const cuisineChip = document.createElement('span');
+                cuisineChip.className = "px-3 py-1 bg-dark-highlight border border-dark-border text-xs text-gray-400 rounded-full font-semibold";
+                cuisineChip.textContent = `Cuisine: ${cuisine}`;
+                chipsContainer.appendChild(cuisineChip);
+            }
+
+            if (additional) {
+                const addChip = document.createElement('span');
+                addChip.className = "px-3 py-1 bg-dark-highlight border border-dark-border text-xs text-gray-400 rounded-full font-semibold";
+                addChip.textContent = `Preferences: ${additional}`;
+                chipsContainer.appendChild(addChip);
+            }
+
+            // Fallback warning
+            const banner = document.getElementById('fallback-banner');
+            if (result.used_fallback) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            // Cards list
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = '';
+
+            const scores = [100, 94, 89, 82, 78];
+
+            result.recommendations.forEach((rec, idx) => {
+                const score = scores[idx] || (80 - idx * 4);
+                const cuisinesText = rec.cuisines ? rec.cuisines.join(', ') : '';
+                
+                const card = document.createElement('div');
+                card.className = "bg-dark-card border border-dark-border rounded-xl p-6 flex flex-col justify-between space-y-4 hover:border-gray-700 transition duration-300";
+                
+                let cuisineTagsHtml = '';
+                if (rec.cuisines) {
+                    rec.cuisines.slice(0, 3).forEach(c => {
+                        cuisineTagsHtml += `<span class="px-2.5 py-1 bg-dark-highlight border border-dark-border text-[10px] text-gray-400 rounded font-bold tracking-wider">${c.toUpperCase()}</span>`;
+                    });
+                }
+
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-brand-red tracking-wider uppercase">#${rec.rank} &nbsp;${score}% MATCH</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">${rec.name}</h3>
+                        <div class="flex items-center gap-4 text-xs text-gray-400 flex-wrap">
+                            <span class="flex items-center gap-1">📍 ${rec.location}</span>
+                            <span class="text-yellow-500 font-semibold">★ ${rec.rating.toFixed(1)}</span>
+                            <span>${rec.cost_symbol} ₹${rec.estimated_cost ? rec.estimated_cost.toLocaleString() : 'N/A'} for two</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            ${cuisineTagsHtml}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-dark-highlight border border-dark-border/40 p-4 rounded-lg space-y-2 mt-4">
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            <span>✨ Why AI Picked It</span>
+                        </div>
+                        <p class="text-xs text-gray-400 leading-relaxed">${rec.explanation}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function resetApp() {
+            document.getElementById('screen-results').classList.add('hidden');
+            document.getElementById('screen-search').classList.remove('hidden');
+            document.getElementById('loading-steps').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
